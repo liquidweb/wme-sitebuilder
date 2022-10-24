@@ -36,7 +36,10 @@ mix.webpackConfig({
 		alias: {
 			'@sb': __dirname + '/assets/js/store-details',
 		}
-	}
+	},
+	watchOptions: {
+		ignored: ['node_modules/*/!(@moderntribe/sitebuilder)/**/'],
+	},
 });
 
 // Enable BrowserSync.

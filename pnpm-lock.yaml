@@ -5,12 +5,15 @@ specifiers:
   '@babel/preset-react': ^7.18.6
   '@emotion/react': ^11.10.4
   '@emotion/styled': ^11.10.4
-  '@moderntribe/sitebuilder': ^1.3.0
+  '@moderntribe/sitebuilder': file:.yalc/@moderntribe/sitebuilder
   '@moderntribe/storebuilder': ^1.3.0
+  '@moderntribe/wme-ui': file:.yalc/@moderntribe/wme-ui
+  '@moderntribe/wme-utils': file:.yalc/@moderntribe/wme-utils
   '@mui/icons-material': ^5.10.9
   '@mui/lab': ^5.0.0-alpha.103
   '@mui/material': ^5.10.9
   '@mui/utils': ^5.10.9
+  '@pmmmwh/react-refresh-webpack-plugin': ^0.5.0-rc.0
   '@wordpress/element': ^4.17.0
   '@wordpress/eslint-plugin': ^12.9.0
   '@wordpress/html-entities': ^3.19.0
@@ -49,8 +52,10 @@ specifiers:
 dependencies:
   '@emotion/react': 11.10.4_b6k74wvxdvqypha4emuv7fd2ke
   '@emotion/styled': 11.10.4_hn2242ymjfeigbcxwpi42fjy6u
-  '@moderntribe/sitebuilder': 1.3.0_hvn2vw7slj2bakjnd2cxd5iyra
+  '@moderntribe/sitebuilder': file:.yalc/@moderntribe/sitebuilder_hvn2vw7slj2bakjnd2cxd5iyra
   '@moderntribe/storebuilder': 1.3.0_hvn2vw7slj2bakjnd2cxd5iyra
+  '@moderntribe/wme-ui': file:.yalc/@moderntribe/wme-ui_raodibjbwlcuyxoqsufx4oxh54
+  '@moderntribe/wme-utils': file:.yalc/@moderntribe/wme-utils
   '@mui/icons-material': 5.10.9_tkczja5i44j7seshubhrpmisiq
   '@mui/lab': 5.0.0-alpha.103_o5fu5zzztezljyppmu7zljxb6q
   '@mui/material': 5.10.9_6xnkn2aqnlmdvuspwqrjexfduy
@@ -64,6 +69,7 @@ dependencies:
 devDependencies:
   '@babel/core': 7.19.3
   '@babel/preset-react': 7.18.6_@babel+core@7.19.3
+  '@pmmmwh/react-refresh-webpack-plugin': 0.5.8_webpack@5.74.0
   '@wordpress/element': 4.17.0
   '@wordpress/eslint-plugin': 12.9.0_f2tgpjn2vk7kkgpazzsqcxisvi
   '@wordpress/i18n': 4.19.0
@@ -1633,29 +1639,28 @@ packages:
     peerDependencies:
       '@emotion/react': ^11.9.3
       '@emotion/styled': ^11.9.3
+      '@mui/base': ^5.0.0-alpha.83
       '@mui/icons-material': ^5.8.4
+      '@mui/lab': ^5.0.0-alpha.82
       '@mui/material': ^5.9.2
+      '@mui/system': ^5.6.4
       '@mui/utils': ^5.9.1
-      '@wordpress/element': ^4.12.0
-      '@wordpress/html-entities': ^3.14.0
-      '@wordpress/i18n': ^4.14.0
-      react: ^18.2.0
-      react-dom: ^18.2.0
-      react-router-dom: ^6.4.2
+      tslib: ^2.4.0
     dependencies:
       '@emotion/react': 11.10.4_b6k74wvxdvqypha4emuv7fd2ke
       '@emotion/styled': 11.10.4_hn2242ymjfeigbcxwpi42fjy6u
       '@moderntribe/wme-ui': 2.2.0_raodibjbwlcuyxoqsufx4oxh54
       '@moderntribe/wme-utils': 0.1.0
       '@mui/icons-material': 5.10.9_tkczja5i44j7seshubhrpmisiq
+      '@mui/lab': 5.0.0-alpha.103_o5fu5zzztezljyppmu7zljxb6q
       '@mui/material': 5.10.9_6xnkn2aqnlmdvuspwqrjexfduy
       '@mui/utils': 5.10.9_react@18.2.0
-      '@wordpress/element': 4.17.0
-      '@wordpress/html-entities': 3.19.0
-      '@wordpress/i18n': 4.19.0
-      react: 18.2.0
-      react-dom: 18.2.0_react@18.2.0
+      history: 5.3.0
+      query-string: 7.1.1
+      react-refresh: 0.14.0
       react-router-dom: 6.4.2_biqbaboplfbrettd7655fr4n2y
+      require-from-string: 2.0.2
+      use-query-params: 1.2.3_bua6jvxw2w7ajxexpyi4aumzhi
     transitivePeerDependencies:
       - '@mui/base'
       - '@mui/lab'
@@ -1923,6 +1928,44 @@ packages:
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.13.0
+    dev: true
+
+  /@pmmmwh/react-refresh-webpack-plugin/0.5.8_webpack@5.74.0:
+    resolution: {integrity: sha512-wxXRwf+IQ6zvHSJZ+5T2RQNEsq+kx4jKRXfFvdt3nBIUzJUAvXEFsUeoaohDe/Kr84MTjGwcuIUPNcstNJORsA==}
+    engines: {node: '>= 10.13'}
+    peerDependencies:
+      '@types/webpack': 4.x || 5.x
+      react-refresh: '>=0.10.0 <1.0.0'
+      sockjs-client: ^1.4.0
+      type-fest: '>=0.17.0 <4.0.0'
+      webpack: '>=4.43.0 <6.0.0'
+      webpack-dev-server: 3.x || 4.x
+      webpack-hot-middleware: 2.x
+      webpack-plugin-serve: 0.x || 1.x
+    peerDependenciesMeta:
+      '@types/webpack':
+        optional: true
+      sockjs-client:
+        optional: true
+      type-fest:
+        optional: true
+      webpack-dev-server:
+        optional: true
+      webpack-hot-middleware:
+        optional: true
+      webpack-plugin-serve:
+        optional: true
+    dependencies:
+      ansi-html-community: 0.0.8
+      common-path-prefix: 3.0.0
+      core-js-pure: 3.25.5
+      error-stack-parser: 2.1.4
+      find-up: 5.0.0
+      html-entities: 2.3.3
+      loader-utils: 2.0.2
+      schema-utils: 3.1.1
+      source-map: 0.7.4
+      webpack: 5.74.0_webpack-cli@4.10.0
     dev: true
 
   /@popperjs/core/2.11.6:
@@ -3546,6 +3589,10 @@ packages:
     engines: {node: '>= 12.0.0'}
     dev: true
 
+  /common-path-prefix/3.0.0:
+    resolution: {integrity: sha512-QE33hToZseCH3jS0qN96O/bSh3kaw/h+Tq7ngyY9eWDUnTlTNUyqfqvCXioLe5Na5jFsL78ra/wuBU4iuEgd4w==}
+    dev: true
+
   /commondir/1.0.1:
     resolution: {integrity: sha512-W9pAhw0ja1Edb5GVdIF1mjZw/ASI0AlShXM83UUGe2DVr5TdAPEA1OA8m/g8zWp9x6On7gqufY+FatDbC3MDQg==}
     dev: true
@@ -4256,6 +4303,12 @@ packages:
     resolution: {integrity: sha512-7dFHNmqeFSEt2ZBsCriorKnn3Z2pj+fd9kmI6QoWw4//DL+icEBfc0U7qJCisqrTsKTjw4fNFy2pW9OqStD84g==}
     dependencies:
       is-arrayish: 0.2.1
+
+  /error-stack-parser/2.1.4:
+    resolution: {integrity: sha512-Sk5V6wVazPhq5MhpO+AUxJn5x7XSXGl1R93Vn7i+zS15KDVxQijejNCrz8340/2bgLBjR9GtEG8ZVKONDjcqGQ==}
+    dependencies:
+      stackframe: 1.3.4
+    dev: true
 
   /es-abstract/1.20.4:
     resolution: {integrity: sha512-0UtvRN79eMe2L+UNEF1BwRe364sj/DXhQ/k5FmivgoSdpM90b8Jc0mDzKMGo7QS0BVbOP/bTwBKNnDc9rNzaPA==}
@@ -8178,6 +8231,11 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
+  /source-map/0.7.4:
+    resolution: {integrity: sha512-l3BikUxvPOcn5E74dZiq5BGsTb5yEwhaTSzccU6t4sDOH8NWJCstKO5QT2CvtFoK6F0saL7p9xHAqHOlCPJygA==}
+    engines: {node: '>= 8'}
+    dev: true
+
   /spdx-correct/3.1.1:
     resolution: {integrity: sha512-cOYcUWwhCuHCXi49RhFRCyJEK3iPj1Ziz9DpViV3tbZOwXD49QzIN3MpOLJNxh2qwq2lJJZaKMVw9qNi4jTC0w==}
     dependencies:
@@ -8242,6 +8300,10 @@ packages:
   /stable/0.1.8:
     resolution: {integrity: sha512-ji9qxRnOVfcuLDySj9qzhGSEFVobyt1kIOSkj1qZzYLzq7Tos/oUUWvotUPQLlrsidqsK6tBH89Bc9kL5zHA6w==}
     deprecated: 'Modern JS already guarantees Array#sort() is a stable sort, so this library is deprecated. See the compatibility table on MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#browser_compatibility'
+    dev: true
+
+  /stackframe/1.3.4:
+    resolution: {integrity: sha512-oeVtt7eWQS+Na6F//S4kJ2K2VbRlS9D43mAlMyVpVWovy9o+jfgH8O9agzANzaiLjclA0oYzUXEM4PurhSUChw==}
     dev: true
 
   /statuses/1.3.1:
@@ -9400,3 +9462,80 @@ packages:
   /zwitch/1.0.5:
     resolution: {integrity: sha512-V50KMwwzqJV0NpZIZFwfOD5/lyny3WlSzRiXgA0G7VUnRlqttta1L6UQIHzd6EuBY/cHGfwTIck7w1yH6Q5zUw==}
     dev: true
+
+  file:.yalc/@moderntribe/sitebuilder_hvn2vw7slj2bakjnd2cxd5iyra:
+    resolution: {directory: .yalc/@moderntribe/sitebuilder, type: directory}
+    id: file:.yalc/@moderntribe/sitebuilder
+    name: '@moderntribe/sitebuilder'
+    version: 1.3.0+de73c9c0
+    peerDependencies:
+      '@emotion/react': ^11.9.3
+      '@emotion/styled': ^11.9.3
+      '@mui/icons-material': ^5.8.4
+      '@mui/material': ^5.9.2
+      '@mui/utils': ^5.9.1
+      '@wordpress/element': ^4.12.0
+      '@wordpress/html-entities': ^3.14.0
+      '@wordpress/i18n': ^4.14.0
+      react: ^18.2.0
+      react-dom: ^18.2.0
+      react-router-dom: ^6.4.2
+    dependencies:
+      '@emotion/react': 11.10.4_b6k74wvxdvqypha4emuv7fd2ke
+      '@emotion/styled': 11.10.4_hn2242ymjfeigbcxwpi42fjy6u
+      '@moderntribe/wme-ui': 2.2.0_raodibjbwlcuyxoqsufx4oxh54
+      '@moderntribe/wme-utils': 0.1.0
+      '@mui/icons-material': 5.10.9_tkczja5i44j7seshubhrpmisiq
+      '@mui/material': 5.10.9_6xnkn2aqnlmdvuspwqrjexfduy
+      '@mui/utils': 5.10.9_react@18.2.0
+      '@wordpress/element': 4.17.0
+      '@wordpress/html-entities': 3.19.0
+      '@wordpress/i18n': 4.19.0
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
+      react-router-dom: 6.4.2_biqbaboplfbrettd7655fr4n2y
+    transitivePeerDependencies:
+      - '@mui/base'
+      - '@mui/lab'
+      - '@mui/system'
+      - tslib
+    dev: false
+
+  file:.yalc/@moderntribe/wme-ui_raodibjbwlcuyxoqsufx4oxh54:
+    resolution: {directory: .yalc/@moderntribe/wme-ui, type: directory}
+    id: file:.yalc/@moderntribe/wme-ui
+    name: '@moderntribe/wme-ui'
+    version: 2.2.0
+    peerDependencies:
+      '@emotion/react': ^11.9.3
+      '@emotion/styled': ^11.9.3
+      '@mui/base': ^5.0.0-alpha.83
+      '@mui/icons-material': ^5.8.4
+      '@mui/lab': ^5.0.0-alpha.82
+      '@mui/material': ^5.9.2
+      '@mui/system': ^5.6.4
+      '@mui/utils': ^5.9.1
+      tslib: ^2.4.0
+    dependencies:
+      '@emotion/react': 11.10.4_b6k74wvxdvqypha4emuv7fd2ke
+      '@emotion/styled': 11.10.4_hn2242ymjfeigbcxwpi42fjy6u
+      '@mui/icons-material': 5.10.9_tkczja5i44j7seshubhrpmisiq
+      '@mui/lab': 5.0.0-alpha.103_o5fu5zzztezljyppmu7zljxb6q
+      '@mui/material': 5.10.9_6xnkn2aqnlmdvuspwqrjexfduy
+      '@mui/utils': 5.10.9_react@18.2.0
+      history: 5.3.0
+      query-string: 7.1.1
+      react-refresh: 0.14.0
+      react-router-dom: 6.4.2_biqbaboplfbrettd7655fr4n2y
+      require-from-string: 2.0.2
+      use-query-params: 1.2.3_bua6jvxw2w7ajxexpyi4aumzhi
+    transitivePeerDependencies:
+      - react
+      - react-dom
+    dev: false
+
+  file:.yalc/@moderntribe/wme-utils:
+    resolution: {directory: .yalc/@moderntribe/wme-utils, type: directory}
+    name: '@moderntribe/wme-utils'
+    version: 0.1.0
+    dev: false
