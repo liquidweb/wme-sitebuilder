@@ -33,7 +33,7 @@
     "dependencies": {
         "@emotion/react": "^11.10.4",
         "@emotion/styled": "^11.10.4",
-        "@moderntribe/sitebuilder": "^1.4.0",
+        "@moderntribe/sitebuilder": "1.6.0-alpha.1",
         "@moderntribe/storebuilder": "^1.4.0",
         "@mui/icons-material": "^5.10.9",
         "@mui/lab": "^5.0.0-alpha.103",
