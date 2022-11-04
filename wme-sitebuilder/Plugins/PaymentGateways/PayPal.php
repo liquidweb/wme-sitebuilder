@@ -134,7 +134,9 @@ class PayPal extends Plugin {
 			return;
 		}
 
+		/** @var \WooCommerce\PayPalCommerce\Onboarding\Render\OnboardingOptionsRenderer $onboarding */
 		$onboarding = $container->get( 'onboarding.render' );
+		/** @var \WooCommerce\PayPalCommerce\WcGateway\Settings\Settings $settings */
 		$settings   = $container->get( 'wcgateway.settings' );
 
 		$this->connected = ( $settings->has( 'client_id' ) && ! empty( $settings->get( 'client_id' ) ) );

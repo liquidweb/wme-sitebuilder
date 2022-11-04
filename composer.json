@@ -43,9 +43,10 @@
     "require-dev": {
         "dealerdirect/phpcodesniffer-composer-installer": "^0.7",
         "friendsofphp/php-cs-fixer": "^3.12",
+        "php-stubs/woocommerce-stubs": ">=4.3",
         "phpcompatibility/phpcompatibility-wp": "^2.0",
         "phpmd/phpmd": "^2.13",
-        "szepeviktor/phpstan-wordpress": "^0.7",
+        "szepeviktor/phpstan-wordpress": "^1.0",
         "wp-coding-standards/wpcs": "^2.1",
         "wpackagist-plugin/woocommerce": ">=4.3",
         "wpackagist-plugin/woocommerce-gateway-stripe": "6.4.1",
