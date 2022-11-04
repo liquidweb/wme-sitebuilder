@@ -44,6 +44,8 @@ interface ManagesDomain {
 	/**
 	 * Search available domains based on provided domain name.
 	 *
+	 * @param string $domain
+	 *
 	 * @return mixed[]|\WP_Error
 	 */
 	public function searchAvailableDomains( $domain );
