@@ -33,7 +33,7 @@
     "dependencies": {
         "@emotion/react": "^11.10.5",
         "@emotion/styled": "^11.10.5",
-        "@moderntribe/sitebuilder": "^1.4.0",
+        "@moderntribe/sitebuilder": "^1.6.0-alpha.9",
         "@moderntribe/storebuilder": "^1.4.1",
         "@mui/icons-material": "^5.10.9",
         "@mui/lab": "^5.0.0-alpha.107",
@@ -75,7 +75,7 @@
         "stylelint-declaration-block-no-ignored-properties": "^2.6.0",
         "stylelint-order": "^4.1.0",
         "underscore": "^1.13.6",
-        "webpack": "^5.74.0",
+        "webpack": "^5.75.0",
         "webpack-cli": "^4.10.0"
     }
 }
