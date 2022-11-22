@@ -8,6 +8,7 @@ class FirstTimeConfiguration extends Wizard {
 
 	use StoresData;
 
+	const FIELD_INDUSTRY  = 'industry';
 	const FIELD_LOGO      = 'logo';
 	const FIELD_PASSWORD  = 'password';
 	const FIELD_SITENAME  = 'siteName';
@@ -48,6 +49,7 @@ class FirstTimeConfiguration extends Wizard {
 
 		$this->add_ajax_action( 'wizard_started', [ $this, 'telemetryWizardStarted' ] );
 		$this->add_ajax_action( 'validateUsername', [ $this, 'validateUsername' ] );
+		$this->add_ajax_action( 'import_industry_images', [ $this, 'importIndustryImages' ] );
 	}
 
 	/**
@@ -101,6 +103,30 @@ class FirstTimeConfiguration extends Wizard {
 
 		if ( ! $this->isUsernameValid( $username ) ) {
 			$errors[] = __( 'Username not valid.', 'wme-sitebuilder' );
+		}
+
+		if ( ! empty( $errors ) ) {
+			wp_send_json_error( $errors, 400 );
+		}
+
+		wp_send_json_success();
+	}
+
+	/**
+	 * Import industry images with collection ID.
+	 */
+	public function importIndustryImages() {
+		$industry = sanitize_text_field( $_POST[ self::FIELD_INDUSTRY ] );
+		$errors   = [];
+
+		if ( empty( $industry ) ) {
+			$errors[] = __( 'Industry not valid.', 'wme-sitebuilder' );
+		}
+
+		try {
+			do_action( 'wme_import_industry_images', $industry );
+		} catch ( Exception $e ) {
+			$errors[] = $e->getMessage();
 		}
 
 		if ( ! empty( $errors ) ) {
