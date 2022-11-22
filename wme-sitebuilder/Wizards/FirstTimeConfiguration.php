@@ -15,6 +15,8 @@ class FirstTimeConfiguration extends Wizard {
 	const FIELD_TAGLINE   = 'tagLine';
 	const FIELD_USERNAME  = 'username';
 	const DATA_STORE_NAME = '_sitebuilder_ftc';
+	const IMPORT_HOOK     = 'wme_import_industry_image';
+	const RUNNER_HOOK     = 'wme_create_as_queue_runner';
 
 	/**
 	 * @var string
@@ -38,6 +40,17 @@ class FirstTimeConfiguration extends Wizard {
 
 	/**
 	 * @var array
+	 *
+	 * 'sample-industry' => [ 'collection ID' ]
+	 *
+	 * @todo populate with map of industry values to collection IDs
+	 */
+	protected $industries_to_collection_ids = [
+		'massage-therapy' => [ '12345' ],
+	];
+
+	/**
+	 * @var array
 	 */
 	public $errors = [];
 
@@ -49,7 +62,7 @@ class FirstTimeConfiguration extends Wizard {
 
 		$this->add_ajax_action( 'wizard_started', [ $this, 'telemetryWizardStarted' ] );
 		$this->add_ajax_action( 'validateUsername', [ $this, 'validateUsername' ] );
-		$this->add_ajax_action( 'import_industry_images', [ $this, 'importIndustryImages' ] );
+		$this->add_ajax_action( 'import_industry_images', [ $this, 'startIndustryImagesImport' ] );
 	}
 
 	/**
@@ -59,6 +72,8 @@ class FirstTimeConfiguration extends Wizard {
 		parent::register_hooks();
 
 		add_action( 'current_screen', [ $this, 'autoLaunch' ] );
+		add_action( 'wp_ajax_' . self::RUNNER_HOOK, [ $this, 'actionCreateActionSchedulerQueueRunner' ] );
+		add_action( self::IMPORT_HOOK, [ $this, 'actionImportIndustryImageAsync' ] );
 		add_action( 'kadence-starter-templates/after_all_import_execution', [ $this, 'restoreLogoAfterKadenceImport' ] );
 	}
 
@@ -103,30 +118,6 @@ class FirstTimeConfiguration extends Wizard {
 
 		if ( ! $this->isUsernameValid( $username ) ) {
 			$errors[] = __( 'Username not valid.', 'wme-sitebuilder' );
-		}
-
-		if ( ! empty( $errors ) ) {
-			wp_send_json_error( $errors, 400 );
-		}
-
-		wp_send_json_success();
-	}
-
-	/**
-	 * Import industry images with collection ID.
-	 */
-	public function importIndustryImages() {
-		$industry = sanitize_text_field( $_POST[ self::FIELD_INDUSTRY ] );
-		$errors   = [];
-
-		if ( empty( $industry ) ) {
-			$errors[] = __( 'Industry not valid.', 'wme-sitebuilder' );
-		}
-
-		try {
-			do_action( 'wme_import_industry_images', $industry );
-		} catch ( Exception $e ) {
-			$errors[] = $e->getMessage();
 		}
 
 		if ( ! empty( $errors ) ) {
@@ -476,5 +467,288 @@ class FirstTimeConfiguration extends Wizard {
 		}
 
 		update_option( 'site_logo', $ftc_logo );
+	}
+
+	/**
+	 * Import industry images from industry selected.
+	 */
+	public function startIndustryImagesImport() {
+		$industry = sanitize_text_field( $_POST[ self::FIELD_INDUSTRY ] );
+
+		if ( empty( $industry ) ) {
+			wp_send_json_error( __( 'Industry not valid.', 'wme-sitebuilder' ), 400 );
+		}
+
+		$collection_id = $this->getCollectionIdForIndustry( $industry );
+
+		if ( empty( $collection_id ) ) {
+			wp_send_json_error( __( 'Industry not valid.', 'wme-sitebuilder' ), 400 );
+		}
+
+		$response = $this->getIndustryCollectionImages( $collection_id );
+		$images   = $response->images;
+
+		if ( empty( $images ) ) {
+			wp_send_json_error( __( 'No images for industry.', 'wme-sitebuilder' ), 400 );
+		}
+
+		$actions = [];
+
+		foreach ( $images as $image ) {
+			$actions[] = as_enqueue_async_action( self::IMPORT_HOOK, [ $image ] );
+		}
+
+		$actions = array_filter( $actions );
+
+		if ( empty( $actions ) ) {
+			wp_send_json_error( __( 'Unable to enqueue tasks to import images.', 'wme-sitebuilder' ), 400 );
+		}
+
+		// Spawn Action Scheduler queue runner immediately.
+		wp_remote_post( admin_url( 'admin-ajax.php' ), [
+			'method'      => 'POST',
+			'timeout'     => 45,
+			'redirection' => 5,
+			'httpversion' => '1.0',
+			'blocking'    => false,
+			'headers'     => [],
+			'cookies'     => [],
+			'body'        => [
+				'action' => self::RUNNER_HOOK,
+				'nonce'  => wp_create_nonce( self::RUNNER_HOOK ),
+			],
+		] );
+
+		if ( ! empty( $errors ) ) {
+			wp_send_json_error( $errors, 400 );
+		}
+
+		wp_send_json_success();
+	}
+
+	/**
+	 * Get collection ID for provided industry.
+	 *
+	 * @param string $industry
+	 *
+	 * @return string
+	 */
+	protected function getCollectionIdForIndustry( $industry ) {
+		if ( ! array_key_exists( $industry, $this->industries_to_collection_ids ) ) {
+			return '';
+		}
+
+		$collection_ids = $this->industries_to_collection_ids[ $industry ];
+		$key = $collection_ids[0];
+
+		if ( 1 < count( $collection_ids ) ) {
+			$key = array_rand( $collection_ids );
+		}
+
+		return $collection_ids[ $key ];
+	}
+
+	/**
+	 * Request industry collection images.
+	 *
+	 * @param string $collection_id
+	 *
+	 * @todo make request
+	 * @todo remove hard-coded response
+	 */
+	protected function getIndustryCollectionImages( $collection_id ) {
+		$registered_sizes = wp_get_registered_image_subsizes();
+		$request_sizes    = [];
+
+		foreach ( $registered_sizes as $name => $size ) {
+			$size['name']    = $name;
+			$request_sizes[] = (object) $size;
+		}
+
+		$request_payload = [
+			'collection_id' => $collection_id,
+			'sizes'         => $request_sizes,
+		];
+
+		// TODO: make the request here.
+
+		return (object) [
+			'collection_id' => $collection_id,
+			'images'        => [
+				(object) [
+					'alt'              => 'Image alt tag value',
+					'photographer'     => 'Photographer',
+					'photographer_url' => 'https://photographer.com',
+					'avg_color'        => '#336699',
+					'sizes'            => [
+						(object) [
+							'name' => 'thumbnail',
+							'src'  => 'https://storebuilder.local/wp-content/uploads/2022/10/bright-rain-150x150.png',
+						],
+						(object) [
+							'name' => 'medium',
+							'src'  => 'https://storebuilder.local/wp-content/uploads/2022/10/bright-rain-300x169.png',
+						],
+						(object) [
+							'name' => 'medium_large',
+							'src'  => 'https://storebuilder.local/wp-content/uploads/2022/10/bright-rain-768x432.png',
+						],
+						(object) [
+							'name' => 'large',
+							'src'  => 'https://storebuilder.local/wp-content/uploads/2022/10/bright-rain-1024x576.png',
+						],
+						(object) [
+							'name' => '1536x1536',
+							'src'  => 'https://storebuilder.local/wp-content/uploads/2022/10/bright-rain-1536x864.png',
+						],
+						(object) [
+							'name' => '2048x2048',
+							'src'  => 'https://storebuilder.local/wp-content/uploads/2022/10/bright-rain-2048x1152.png',
+						],
+					],
+				],
+			],
+		];
+	}
+
+	/**
+	 * Async action: wme_import_industry_image.
+	 *
+	 * @param array $image
+	 * @param int $attempt
+	 * @param int $max_attempts
+	 */
+	public function actionImportIndustryImageAsync( $image, $attempt = 1, $max_attempts = 3 ) {
+		try {
+			$this->importSingleIndustryImage( $image );
+		} catch ( \Exception $e ) {
+			if ( $attempt === $max_attempts ) {
+				// Re-throw exception to Action Scheduler for logging.
+				throw new Exception( $e->getMessage(), $e->getCode(), $e );
+			}
+
+			// Enqueue another attempt.
+			as_enqueue_async_action( self::IMPORT_HOOK, [ $image, ++$attempt, $max_attempts ] );
+		}
+	}
+
+	/**
+	 * Import industry image within AS action.
+	 *
+	 * @param array $image
+	 *
+	 * @throws Exception
+	 */
+	protected function importSingleIndustryImage( $image ) {
+		$metadata_sizes = [];
+		$upload_dir     = wp_upload_dir();
+
+		if ( empty( $image ) || ! is_array( $image ) ) {
+			throw new Exception( 'No array with image data provided' );
+		}
+
+		$image = wp_parse_args( $image, [
+			'alt' => '',
+		] );
+
+		foreach ( $image['sizes'] as $size ) {
+			$image_request = wp_remote_get( $size['src'] );
+
+			if ( is_wp_error( $image_request ) || empty( wp_remote_retrieve_body( $image_request ) ) ) {
+				$contents = wp_remote_retrieve_body( $image_request );
+			}
+
+			if ( empty( $contents ) ) {
+				throw new Exception( 'Unable to read image contents.' );
+			}
+
+			$filename   = wp_basename( $size['src'] );
+			$filepath   = sprintf( '%s/%s', $upload_dir['path'], $filename );
+			$written    = get_filesystem_method( [], $upload_dir['path'] )->put_contents( $filepath, $contents );
+
+			if ( empty( $written ) ) {
+				throw new Exception( 'Unable to write image.' );
+			}
+
+			if ( '2048x2048' === $size['name'] ) {
+				$largest_filepath = $filepath;
+				$largest_filename = $filename;
+			}
+
+			$file_sizes = getimagesize( $filepath );
+
+			$metadata_sizes[ $size['name'] ] = [
+				'file'      => $filename,
+				'width'     => $file_sizes[0],
+				'height'    => $file_sizes[1],
+				'mime-type' => $file_sizes['mime'],
+				'filesize'  => wp_filesize( $filepath ),
+			];
+		}
+
+		$type    = wp_check_filetype_and_ext( $largest_filepath, $largest_filename );
+		$title   = preg_replace( '/\.[^.]+$/', '', $largest_filename );
+		$content = sprintf( 'Photo by %s', esc_html( $image['photographer'] ) );
+
+		if ( ! empty( $image['photographer_url'] ) ) {
+			$content .= sprintf( ' - %s', esc_url( $image['photographer_url'] ) );
+		}
+
+		$attachment = [
+			'post_mime_type' => $type['type'],
+			'guid'           => sprintf( '%s/%s', $upload_dir['url'], $largest_filename ),
+			'post_title'     => $title,
+			'post_content'   => $content,
+		];
+
+		$attachment_id = wp_insert_attachment( $attachment, $largest_filepath );
+
+		if ( is_wp_error( $attachment_id ) ) {
+			throw new Exception( $attachment_id->get_error_message() );
+		}
+
+		if ( ! function_exists( 'wp_generate_attachment_metadata' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/image.php';
+		}
+
+		// Don't generate sub-sizes.
+		add_filter( 'intermediate_image_sizes_advanced', [ $this, 'return_empty_array' ], 1000 );
+
+		$metadata          = wp_generate_attachment_metadata( $attachment_id, $largest_filepath );
+		$metadata['sizes'] = $metadata_sizes;
+
+		remove_filter( 'intermediate_image_sizes_advanced', [ $this, 'return_empty_array' ], 1000 );
+
+		wp_update_attachment_metadata( $attachment_id, $metadata );
+
+		if ( empty( $image['alt'] ) ) {
+			return;
+		}
+
+		update_post_meta( $attachment_id, '_wp_attachment_image_alt', $image['alt'] );
+	}
+
+	/**
+	 * Used to prevent sub-size generation.
+	 *
+	 * Preferable to WP's __return_empty_array because it's unique.
+	 *
+	 * @return array
+	 */
+	public function return_empty_array() {
+		return [];
+	}
+
+	/**
+	 * Action: wme_create_as_queue_runner.
+	 *
+	 * Spawn an Action Scheduler queue runner.
+	 */
+	public function actionCreateActionSchedulerQueueRunner() {
+		if ( isset( $_POST['nonce'] ) && wp_verify_nonce( $_POST['nonce'], self::RUNNER_HOOK ) ) {
+			ActionScheduler_QueueRunner::instance()->run();
+		}
+
+		wp_die();
 	}
 }
