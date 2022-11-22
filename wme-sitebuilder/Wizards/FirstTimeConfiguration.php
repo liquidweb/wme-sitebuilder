@@ -3,6 +3,7 @@
 namespace Tribe\WME\Sitebuilder\Wizards;
 
 use Tribe\WME\Sitebuilder\Concerns\StoresData;
+use Spatie\Async\Pool;
 
 class FirstTimeConfiguration extends Wizard {
 
@@ -651,43 +652,49 @@ class FirstTimeConfiguration extends Wizard {
 			'alt' => '',
 		] );
 
+		$largest = [];
+		$pool    = Pool::create();
+
 		foreach ( $image['sizes'] as $size ) {
-			$image_request = wp_remote_get( $size['src'] );
+			$pool->add( function () use ( $size, $metadata_sizes, $upload_dir, $largest ) {
+				$image_request = wp_remote_get( $size['src'] );
 
-			if ( is_wp_error( $image_request ) || empty( wp_remote_retrieve_body( $image_request ) ) ) {
+				if ( is_wp_error( $image_request ) || empty( wp_remote_retrieve_body( $image_request ) ) ) {
+					throw new Exception( 'Unable to read image contents.' );
+				}
+
 				$contents = wp_remote_retrieve_body( $image_request );
-			}
+				$filename = wp_basename( $size['src'] );
+				$filepath = sprintf( '%s/%s', $upload_dir['path'], $filename );
+				$written  = get_filesystem_method( [], $upload_dir['path'] )->put_contents( $filepath, $contents );
 
-			if ( empty( $contents ) ) {
-				throw new Exception( 'Unable to read image contents.' );
-			}
+				if ( empty( $written ) ) {
+					throw new Exception( 'Unable to write image.' );
+				}
 
-			$filename   = wp_basename( $size['src'] );
-			$filepath   = sprintf( '%s/%s', $upload_dir['path'], $filename );
-			$written    = get_filesystem_method( [], $upload_dir['path'] )->put_contents( $filepath, $contents );
+				if ( '2048x2048' === $size['name'] ) {
+					$largest = [
+						'filepath' => $filepath,
+						'filename' => $filename,
+					];
+				}
 
-			if ( empty( $written ) ) {
-				throw new Exception( 'Unable to write image.' );
-			}
+				$file_sizes = getimagesize( $filepath );
 
-			if ( '2048x2048' === $size['name'] ) {
-				$largest_filepath = $filepath;
-				$largest_filename = $filename;
-			}
-
-			$file_sizes = getimagesize( $filepath );
-
-			$metadata_sizes[ $size['name'] ] = [
-				'file'      => $filename,
-				'width'     => $file_sizes[0],
-				'height'    => $file_sizes[1],
-				'mime-type' => $file_sizes['mime'],
-				'filesize'  => wp_filesize( $filepath ),
-			];
+				$metadata_sizes[ $size['name'] ] = [
+					'file'      => $filename,
+					'width'     => $file_sizes[0],
+					'height'    => $file_sizes[1],
+					'mime-type' => $file_sizes['mime'],
+					'filesize'  => wp_filesize( $filepath ),
+				];
+			} );
 		}
 
-		$type    = wp_check_filetype_and_ext( $largest_filepath, $largest_filename );
-		$title   = preg_replace( '/\.[^.]+$/', '', $largest_filename );
+		$pool->wait();
+
+		$type    = wp_check_filetype_and_ext( $largest['filepath'], $largest['filename'] );
+		$title   = preg_replace( '/\.[^.]+$/', '', $largest['filename'] );
 		$content = sprintf( 'Photo by %s', esc_html( $image['photographer'] ) );
 
 		if ( ! empty( $image['photographer_url'] ) ) {
@@ -696,12 +703,12 @@ class FirstTimeConfiguration extends Wizard {
 
 		$attachment = [
 			'post_mime_type' => $type['type'],
-			'guid'           => sprintf( '%s/%s', $upload_dir['url'], $largest_filename ),
+			'guid'           => sprintf( '%s/%s', $upload_dir['url'], $largest['filename'] ),
 			'post_title'     => $title,
 			'post_content'   => $content,
 		];
 
-		$attachment_id = wp_insert_attachment( $attachment, $largest_filepath );
+		$attachment_id = wp_insert_attachment( $attachment, $largest['filepath'] );
 
 		if ( is_wp_error( $attachment_id ) ) {
 			throw new Exception( $attachment_id->get_error_message() );
@@ -714,7 +721,7 @@ class FirstTimeConfiguration extends Wizard {
 		// Don't generate sub-sizes.
 		add_filter( 'intermediate_image_sizes_advanced', [ $this, 'return_empty_array' ], 1000 );
 
-		$metadata          = wp_generate_attachment_metadata( $attachment_id, $largest_filepath );
+		$metadata          = wp_generate_attachment_metadata( $attachment_id, $largest['filepath'] );
 		$metadata['sizes'] = $metadata_sizes;
 
 		remove_filter( 'intermediate_image_sizes_advanced', [ $this, 'return_empty_array' ], 1000 );
