@@ -38,6 +38,7 @@
         "composer-runtime-api": "^2",
         "composer/installers": "~1.0 || ^2.0",
         "psr/log": "^1.1",
+        "spatie/async": "^1.5",
         "stellarwp/container": "^0.1.1"
     },
     "require-dev": {
