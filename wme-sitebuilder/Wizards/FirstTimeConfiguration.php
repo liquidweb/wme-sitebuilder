@@ -554,7 +554,8 @@ class FirstTimeConfiguration extends Wizard {
 	 *
 	 * @param string $collection_id
 	 *
-	 * @todo make request
+	 * @return stdClass
+	 *
 	 * @todo remove hard-coded response
 	 */
 	protected function getIndustryCollectionImages( $collection_id ) {
@@ -571,7 +572,16 @@ class FirstTimeConfiguration extends Wizard {
 			'sizes'         => $request_sizes,
 		];
 
-		// TODO: make the request here.
+// 		$request_url = '';
+// 		$response    = wp_remote_get( $request_url, [
+// 			'body' => $request_payload,
+// 		] );
+//
+// 		if ( is_wp_error( $response ) ) {
+// 			return (object) [];
+// 		}
+//
+// 		return wp_remote_retrieve_body( $response );
 
 		return (object) [
 			'collection_id' => $collection_id,
