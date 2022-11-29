@@ -2,8 +2,11 @@
 
 namespace Tribe\WME\Sitebuilder\Wizards;
 
-use Tribe\WME\Sitebuilder\Concerns\StoresData;
+use ActionScheduler_QueueRunner;
+use Exception;
 use Spatie\Async\Pool;
+use Throwable;
+use Tribe\WME\Sitebuilder\Concerns\StoresData;
 
 class FirstTimeConfiguration extends Wizard {
 
@@ -74,6 +77,7 @@ class FirstTimeConfiguration extends Wizard {
 
 		add_action( 'current_screen', [ $this, 'autoLaunch' ] );
 		add_action( 'wp_ajax_' . self::RUNNER_HOOK, [ $this, 'actionCreateActionSchedulerQueueRunner' ] );
+		add_action( 'wp_ajax_nopriv_' . self::RUNNER_HOOK, [ $this, 'actionCreateActionSchedulerQueueRunner' ] );
 		add_action( self::IMPORT_HOOK, [ $this, 'actionImportIndustryImageAsync' ] );
 		add_action( 'kadence-starter-templates/after_all_import_execution', [ $this, 'restoreLogoAfterKadenceImport' ] );
 	}
@@ -520,9 +524,6 @@ class FirstTimeConfiguration extends Wizard {
 			],
 		] );
 
-		if ( ! empty( $errors ) ) {
-			wp_send_json_error( $errors, 400 );
-		}
 
 		wp_send_json_success();
 	}
@@ -540,7 +541,7 @@ class FirstTimeConfiguration extends Wizard {
 		}
 
 		$collection_ids = $this->industries_to_collection_ids[ $industry ];
-		$key = $collection_ids[0];
+		$key = 0;
 
 		if ( 1 < count( $collection_ids ) ) {
 			$key = array_rand( $collection_ids );
@@ -594,27 +595,59 @@ class FirstTimeConfiguration extends Wizard {
 					'sizes'            => [
 						(object) [
 							'name' => 'thumbnail',
-							'src'  => 'https://storebuilder.local/wp-content/uploads/2022/10/bright-rain-150x150.png',
+							'src'  => 'https://sitebuilder.local/wp-content/uploads/2022/10/bright-rain-150x150.png',
 						],
 						(object) [
 							'name' => 'medium',
-							'src'  => 'https://storebuilder.local/wp-content/uploads/2022/10/bright-rain-300x169.png',
+							'src'  => 'https://sitebuilder.local/wp-content/uploads/2022/10/bright-rain-300x169.png',
 						],
 						(object) [
 							'name' => 'medium_large',
-							'src'  => 'https://storebuilder.local/wp-content/uploads/2022/10/bright-rain-768x432.png',
+							'src'  => 'https://sitebuilder.local/wp-content/uploads/2022/10/bright-rain-768x432.png',
 						],
 						(object) [
 							'name' => 'large',
-							'src'  => 'https://storebuilder.local/wp-content/uploads/2022/10/bright-rain-1024x576.png',
+							'src'  => 'https://sitebuilder.local/wp-content/uploads/2022/10/bright-rain-1024x576.png',
 						],
 						(object) [
 							'name' => '1536x1536',
-							'src'  => 'https://storebuilder.local/wp-content/uploads/2022/10/bright-rain-1536x864.png',
+							'src'  => 'https://sitebuilder.local/wp-content/uploads/2022/10/bright-rain-1536x864.png',
 						],
 						(object) [
 							'name' => '2048x2048',
-							'src'  => 'https://storebuilder.local/wp-content/uploads/2022/10/bright-rain-2048x1152.png',
+							'src'  => 'https://sitebuilder.local/wp-content/uploads/2022/10/bright-rain-2048x1152.png',
+						],
+					],
+				],
+				( object ) [
+					'alt' => '7Vf1z78McBY',
+					'photographer' => 'Photographer Ing',
+					'photographer_url' => 'https://photographering.com',
+					'avg_color' => '#006677',
+					'sizes' => [
+						( object ) [
+							'name' => 'thumbnail',
+							'src' => 'https://sitebuilder.local/wp-content/uploads/2022/10/ing-7Vf1z78McBY-unsplash-150x150.jpeg',
+						],
+						( object ) [
+							'name' => 'medium',
+							'src' => 'https://sitebuilder.local/wp-content/uploads/2022/10/ing-7Vf1z78McBY-unsplash-300x200.jpeg',
+						],
+						( object ) [
+							'name' => 'medium_large',
+							'src' => 'https://sitebuilder.local/wp-content/uploads/2022/10/ing-7Vf1z78McBY-unsplash-768x512.jpeg',
+						],
+						( object ) [
+							'name' => 'large',
+							'src' => 'https://sitebuilder.local/wp-content/uploads/2022/10/ing-7Vf1z78McBY-unsplash-1024x683.jpeg',
+						],
+						( object ) [
+							'name' => '1536x1536',
+							'src' => 'https://sitebuilder.local/wp-content/uploads/2022/10/ing-7Vf1z78McBY-unsplash-1536x1024.jpeg',
+						],
+						( object ) [
+							'name' => '2048x2048',
+							'src' => 'https://sitebuilder.local/wp-content/uploads/2022/10/ing-7Vf1z78McBY-unsplash-2048x1366.jpeg',
 						],
 					],
 				],
@@ -649,8 +682,14 @@ class FirstTimeConfiguration extends Wizard {
 	 * @param array $image
 	 *
 	 * @throws Exception
+	 *
+	 * @todo Justin: I couldn't get the Pool to work when testing; please review and rewrite.
 	 */
 	protected function importSingleIndustryImage( $image ) {
+		global $wp_filesystem;
+
+		\WP_Filesystem();
+
 		$metadata_sizes = [];
 		$upload_dir     = wp_upload_dir();
 
@@ -663,26 +702,71 @@ class FirstTimeConfiguration extends Wizard {
 		] );
 
 		$largest = [];
-		$pool    = Pool::create();
+		// $pool    = Pool::create();
 
 		foreach ( $image['sizes'] as $size ) {
-			$pool->add( function () use ( $size, $metadata_sizes, $upload_dir, $largest ) {
+// 			$pool->add( function () use ( $wp_filesystem, $size, $metadata_sizes, $upload_dir, $largest ) {
+// 				$image_request = wp_remote_get( $size['src'] );
+//
+// 				if ( is_wp_error( $image_request ) ) ) {
+// 					throw new Exception( $image_request->get_error_message() );
+// 				}
+//
+// 				$contents = wp_remote_retrieve_body( $image_request );
+//
+// 				if ( empty( wp_remote_retrieve_body( $image_request ) ) {
+// 					throw new Exception( sprintf( 'Unable to read image contents: %s', $size['src'] ) );
+// 				}
+//
+// 				$contents = wp_remote_retrieve_body( $image_request );
+// 				$filename = wp_basename( $size['src'] );
+// 				$filepath = sprintf( '%s/%s', $upload_dir['path'], $filename );
+// 				$written  = $wp_filesystem->put_contents( $filepath, $contents );
+//
+// 				if ( empty( $written ) ) {
+// 					throw new Exception( 'Unable to write image.' );
+// 				}
+//
+// 				if ( '2048x2048' === $size['name'] ) {error_log( '2048x2048' );
+// 					$largest = [
+// 						'filepath' => $filepath,
+// 						'filename' => $filename,
+// 					];
+// 				}
+//
+// 				$file_sizes = getimagesize( $filepath );
+//
+// 				$metadata_sizes[ $size['name'] ] = [
+// 					'file'      => $filename,
+// 					'width'     => $file_sizes[0],
+// 					'height'    => $file_sizes[1],
+// 					'mime-type' => $file_sizes['mime'],
+// 					'filesize'  => wp_filesize( $filepath ),
+// 				];
+//
+// 			// Catch Pool error and try normally.
+// 			} )->catch( function ( Throwable $e ) use ( $wp_filesystem, $size, $metadata_sizes, $upload_dir, $largest ) {
 				$image_request = wp_remote_get( $size['src'] );
 
-				if ( is_wp_error( $image_request ) || empty( wp_remote_retrieve_body( $image_request ) ) ) {
-					throw new Exception( 'Unable to read image contents.' );
+				if ( is_wp_error( $image_request ) ) ) {
+					throw new Exception( $image_request->get_error_message() );
 				}
 
 				$contents = wp_remote_retrieve_body( $image_request );
+
+				if ( empty( $contents ) {
+					throw new Exception( sprintf( 'Unable to read image contents: %s', $size['src'] ) );
+				}
+
 				$filename = wp_basename( $size['src'] );
 				$filepath = sprintf( '%s/%s', $upload_dir['path'], $filename );
-				$written  = get_filesystem_method( [], $upload_dir['path'] )->put_contents( $filepath, $contents );
+				$written  = $wp_filesystem->put_contents( $filepath, $contents );
 
 				if ( empty( $written ) ) {
 					throw new Exception( 'Unable to write image.' );
 				}
 
-				if ( '2048x2048' === $size['name'] ) {
+				if ( '2048x2048' === $size['name'] ) {error_log( '2048x2048' );
 					$largest = [
 						'filepath' => $filepath,
 						'filename' => $filename,
@@ -698,10 +782,10 @@ class FirstTimeConfiguration extends Wizard {
 					'mime-type' => $file_sizes['mime'],
 					'filesize'  => wp_filesize( $filepath ),
 				];
-			} );
+			// } );
 		}
 
-		$pool->wait();
+		// $pool->wait();
 
 		$type    = wp_check_filetype_and_ext( $largest['filepath'], $largest['filename'] );
 		$title   = preg_replace( '/\.[^.]+$/', '', $largest['filename'] );
