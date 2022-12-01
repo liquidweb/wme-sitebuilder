@@ -731,7 +731,7 @@ class FirstTimeConfiguration extends Wizard {
 // 					throw new Exception( 'Unable to write image.' );
 // 				}
 //
-// 				if ( '2048x2048' === $size['name'] ) {error_log( '2048x2048' );
+// 				if ( '2048x2048' === $size['name'] ) {
 // 					$largest = [
 // 						'filepath' => $filepath,
 // 						'filename' => $filename,
@@ -770,7 +770,7 @@ class FirstTimeConfiguration extends Wizard {
 					throw new Exception( 'Unable to write image.' );
 				}
 
-				if ( '2048x2048' === $size['name'] ) {error_log( '2048x2048' );
+				if ( '2048x2048' === $size['name'] ) {
 					$largest = [
 						'filepath' => $filepath,
 						'filename' => $filename,
