@@ -78,7 +78,7 @@ class FirstTimeConfiguration extends Wizard {
 		add_action( 'current_screen', [ $this, 'autoLaunch' ] );
 		add_action( 'wp_ajax_' . self::RUNNER_HOOK, [ $this, 'actionCreateActionSchedulerQueueRunner' ] );
 		add_action( 'wp_ajax_nopriv_' . self::RUNNER_HOOK, [ $this, 'actionCreateActionSchedulerQueueRunner' ] );
-		add_action( self::IMPORT_HOOK, [ $this, 'actionImportIndustryImageAsync' ] );
+		add_action( self::IMPORT_HOOK, [ $this, 'actionImportIndustryImageAsync' ], 10, 3 );
 		add_action( 'kadence-starter-templates/after_all_import_execution', [ $this, 'restoreLogoAfterKadenceImport' ] );
 	}
 
@@ -688,7 +688,11 @@ class FirstTimeConfiguration extends Wizard {
 	protected function importSingleIndustryImage( $image ) {
 		global $wp_filesystem;
 
-		\WP_Filesystem();
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . '/wp-admin/includes/file.php';
+		}
+
+		WP_Filesystem();
 
 		$metadata_sizes = [];
 		$upload_dir     = wp_upload_dir();
