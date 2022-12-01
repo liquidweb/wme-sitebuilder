@@ -748,13 +748,13 @@ class FirstTimeConfiguration extends Wizard {
 // 			} )->catch( function ( Throwable $e ) use ( $wp_filesystem, $size, $metadata_sizes, $upload_dir, $largest ) {
 				$image_request = wp_remote_get( $size['src'] );
 
-				if ( is_wp_error( $image_request ) ) ) {
+				if ( is_wp_error( $image_request ) ) {
 					throw new Exception( $image_request->get_error_message() );
 				}
 
 				$contents = wp_remote_retrieve_body( $image_request );
 
-				if ( empty( $contents ) {
+				if ( empty( $contents ) ) {
 					throw new Exception( sprintf( 'Unable to read image contents: %s', $size['src'] ) );
 				}
 
