@@ -53,6 +53,7 @@ class Container extends BaseContainer {
 					$app->make( Plugins\Shipping::class )
 				);
 			},
+			Cards\SiteVisibility::class           => null,
 			Cards\StoreSetup::class               => function ( $app ) {
 				return new Cards\StoreSetup(
 					$app->make( Wizards\StoreSetup::class )
@@ -79,6 +80,14 @@ class Container extends BaseContainer {
 						$app->make( Cards\FirstTimeConfiguration::class ),
 						$app->make( Cards\LookAndFeel::class ),
 						$app->make( Cards\GoLive::class ),
+					]
+				);
+			},
+
+			Modules\SiteDetails::class            => function ($app ) {
+				return new Modules\SiteDetails(
+					[
+						$app->make( Cards\SiteVisibility::class ),
 					]
 				);
 			},

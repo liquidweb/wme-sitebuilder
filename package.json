@@ -33,8 +33,10 @@
     "dependencies": {
         "@emotion/react": "^11.10.5",
         "@emotion/styled": "^11.10.5",
-        "@moderntribe/sitebuilder": "^1.6.0-alpha.11",
-        "@moderntribe/storebuilder": "^1.4.2",
+        "@moderntribe/sitebuilder": "file:.yalc/@moderntribe/sitebuilder",
+        "@moderntribe/sitedetails": "file:.yalc/@moderntribe/sitedetails",
+        "@moderntribe/storebuilder": "file:.yalc/@moderntribe/storebuilder",
+        "@moderntribe/wme-ui": "file:.yalc/@moderntribe/wme-ui",
         "@mui/icons-material": "^5.10.9",
         "@mui/lab": "^5.0.0-alpha.107",
         "@mui/material": "^5.10.13",
