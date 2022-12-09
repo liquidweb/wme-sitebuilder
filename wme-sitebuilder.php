@@ -47,6 +47,7 @@ try {
 	$wme_sitebuilder->registerModules([
 		Modules\SiteBuilder::class,
 		Modules\StoreDetails::class,
+		Modules\SiteDetails::class,
 	]);
 
 	$wme_sitebuilder->init();

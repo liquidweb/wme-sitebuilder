@@ -62,9 +62,11 @@ if (process.env.MIX_PROXY_URL) {
 // Bundle JavaScript.
 mix.js('assets/js/sitebuilder.js', '/')
 	.js('assets/js/store-details.js', '/')
+	.js('assets/js/site-details.js', '/')
 	.sourceMaps(false)
 	.eslint()
 	.react();
 
 mix.copyDirectory('node_modules/@moderntribe/sitebuilder/dist/assets/', `${public_path}/sitebuilder/`)
 mix.copyDirectory('node_modules/@moderntribe/storebuilder/dist/assets/', `${public_path}/store-details/`)
+mix.copyDirectory('node_modules/@moderntribe/sitedetails/dist/assets/', `${public_path}/site-details/`)
