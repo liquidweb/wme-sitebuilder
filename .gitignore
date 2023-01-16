@@ -34,5 +34,3 @@ Thumbs.db
 .vscode/settings.json
 .yalc
 yalc.lock
-.turbo
-tests/results
