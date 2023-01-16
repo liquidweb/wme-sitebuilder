@@ -40,17 +40,18 @@ class FirstTimeConfiguration extends Card {
 	public function props() {
 		return [
 			'id'        => 'ftc',
-			'navTitle'  => __( 'The Basics', 'wme-sitebuilder' ),
-			'title'     => __( 'Configure the Basics', 'wme-sitebuilder' ),
-			'intro'     => __( 'Set up the basics of your site and we\'ll get you started.', 'wme-sitebuilder' ),
+			'title'     => __( 'Set up your site', 'wme-sitebuilder' ),
+			'intro'     => __( 'This is where the fun begins.', 'wme-sitebuilder' ),
 			'completed' => $this->wizard->isComplete(),
+			'time'      => __( '5 Minutes', 'wme-sitebuilder' ),
 			'rows'      => [
 				[
 					'id'         => 'ftc-wizard',
 					'type'       => 'task',
 					'taskCta'    => __( 'Get Started', 'wme-sitebuilder' ),
-					'title'      => __( 'Site Name, Logo & Details', 'wme-sitebuilder' ),
+					'title'      => __( 'Site Name, Logo & Store Details', 'wme-sitebuilder' ),
 					'intro'      => __( 'Tell us a little bit about your site.', 'wme-sitebuilder' ),
+					'icon'       => 'setup-icon-setup.png',
 					'wizardHash' => '/wizard/ftc',
 				],
 			],
