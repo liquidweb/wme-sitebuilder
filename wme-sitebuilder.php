@@ -28,10 +28,10 @@ if ( defined( 'WP_INSTALLING' ) && WP_INSTALLING ) {
 }
 
 // The version of the WME Sitebuilder Managed Apps plugin.
-define( __NAMESPACE__ . '\PLUGIN_VERSION', '2.0.0' );
-define( __NAMESPACE__ . '\PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-define( __NAMESPACE__ . '\PLUGIN_DIR', __DIR__ . '/wme-sitebuilder/' );
-define( __NAMESPACE__ . '\VENDOR_DIR', __DIR__ . '/wme-sitebuilder/vendor/' );
+const PLUGIN_VERSION = '2.0.0';
+const PLUGIN_URL = plugin_dir_url( __FILE__ );
+const PLUGIN_DIR = __DIR__ . '/wme-sitebuilder/';
+const VENDOR_DIR = __DIR__ . '/wme-sitebuilder/vendor/';
 
 // Initialize the plugin.
 try {
