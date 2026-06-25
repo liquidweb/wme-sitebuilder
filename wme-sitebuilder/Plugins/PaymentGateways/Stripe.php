@@ -3,7 +3,7 @@
 namespace Tribe\WME\Sitebuilder\Plugins\PaymentGateways;
 
 use Tribe\WME\Sitebuilder\Plugins\Plugin;
-use WC_Stripe_Connect;
+use WC_Stripe_Helper;
 
 /**
  * @property string[] $keys
@@ -143,7 +143,7 @@ class Stripe extends Plugin {
 		$connect   = $stripe->connect;
 		$connected = $connect->is_connected();
 		$oauth_url = $connect->get_oauth_url();
-		$options   = get_option( WC_Stripe_Connect::SETTINGS_OPTION, [] );
+		$options   = get_option( WC_Stripe_Helper::SETTINGS_OPTION, [] );
 
 		if ( is_wp_error( $oauth_url ) ) {
 			$oauth_url = '';
