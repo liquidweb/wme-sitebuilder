@@ -1,5 +1,11 @@
 # @moderntribe/wme-sitebuilder
 
+## 2.0.2
+
+### Patch Changes
+
+- Fix the reference to WooCommerce Gateway Stripe settings.
+
 ## 2.0.1
 
 ### Patch Changes
