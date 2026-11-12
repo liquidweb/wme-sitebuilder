@@ -4,6 +4,7 @@ namespace Tribe\WME\Sitebuilder\Plugins\PaymentGateways;
 
 use Tribe\WME\Sitebuilder\Plugins\Plugin;
 use WC_Stripe_Connect;
+use WC_Stripe_Helper;
 
 /**
  * @property string[] $keys
@@ -143,7 +144,7 @@ class Stripe extends Plugin {
 		$connect   = $stripe->connect;
 		$connected = $connect->is_connected();
 		$oauth_url = $connect->get_oauth_url();
-		$options   = get_option( WC_Stripe_Connect::SETTINGS_OPTION, [] );
+		$options   = get_option( $this->get_stripe_settings_option_key(), [] );
 
 		if ( is_wp_error( $oauth_url ) ) {
 			$oauth_url = '';
@@ -160,5 +161,22 @@ class Stripe extends Plugin {
 			'publishable' => trim( $options['publishable_key'] ),
 			'secret'      => trim( $options['secret_key'] ),
 		];
+	}
+
+	/**
+	 * Get the Stripe settings option key for the installed plugin version.
+	 *
+	 * @return string
+	 */
+	private function get_stripe_settings_option_key() {
+		if ( class_exists( WC_Stripe_Helper::class ) && defined( WC_Stripe_Helper::class . '::SETTINGS_OPTION' ) ) {
+			return WC_Stripe_Helper::SETTINGS_OPTION;
+		}
+
+		if ( class_exists( WC_Stripe_Connect::class ) && defined( WC_Stripe_Connect::class . '::SETTINGS_OPTION' ) ) {
+			return WC_Stripe_Connect::SETTINGS_OPTION;
+		}
+
+		return 'woocommerce_stripe_settings';
 	}
 }
