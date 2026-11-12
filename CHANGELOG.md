@@ -1,5 +1,11 @@
 # @moderntribe/wme-sitebuilder
 
+## 0.6.3
+
+### Patch Changes
+
+- Read the WooCommerce Stripe Gateway settings option from `WC_Stripe_Helper`, falling back to `WC_Stripe_Connect`, to prevent a fatal error on Stripe Gateway 10.8+.
+
 ## 0.6.2
 
 ### Patch Changes
